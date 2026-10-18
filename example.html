@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人生 K 线 · 示例</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <div class="brand"><span class="dot"></span><h1>人生 K 线</h1></div>
+      <div class="sub" id="rangeSub">加载中…</div>
+    </div>
+    <div class="hero">
+      <div class="num" id="heroNum">0.0<small>人生指数</small></div>
+      <div class="chg" id="heroChg"><span class="dimc">出生时 = 0</span></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="k">当前人生指数</div>
+      <div class="v" id="stCur">—</div>
+      <div class="s">六维加权 · 满分 100</div>
+    </div>
+    <div class="stat">
+      <div class="k">最高点</div>
+      <div class="v up" id="stMax">—</div>
+      <div class="s" id="stMaxD">—</div>
+    </div>
+    <div class="stat">
+      <div class="k">最大回撤</div>
+      <div class="v down" id="stDD">—</div>
+      <div class="s" id="stDDD">—</div>
+    </div>
+    <div class="stat">
+      <div class="k">较十年前</div>
+      <div class="v up" id="st10">—</div>
+      <div class="s" id="st10D">—</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-r="all">全景</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--up)"></i>上行</span>
+        <span><i style="background:var(--down)"></i>回落</span>
+        <span><i style="background:var(--ma)"></i>均线</span>
+        <span><i style="background:var(--gold)"></i>当前</span>
+      </div>
+    </div>
+
+    <div class="ohlc" id="ohlc"></div>
+
+    <div class="canvas-box">
+      <canvas id="cv"></canvas>
+      <div class="tip" id="tip"></div>
+      <div class="caption" id="caption">
+        <div class="c-date" id="capDate"></div>
+        <div class="c-title" id="capTitle"></div>
+      </div>
+    </div>
+
+    <div class="player">
+      <button class="play-btn" id="playBtn" title="播放 / 暂停">
+        <span class="ico" id="playIco">▶</span>
+      </button>
+      <input type="range" class="scrub" id="scrub" min="0" max="0" value="0" step="1">
+      <div class="pmeta" id="pmeta">—</div>
+      <div class="speeds">
+        <button class="sp" data-sp="0.25">0.25×</button>
+        <button class="sp" data-sp="0.5">0.5×</button>
+        <button class="sp on" data-sp="1">1×</button>
+        <button class="sp" data-sp="2">2×</button>
+        <button class="sp" data-sp="4">4×</button>
+      </div>
+    </div>
+
+    <div class="dims" id="dims"></div>
+
+    <div class="foot">
+      <div class="l">
+        <span class="pill">月 K</span>
+        <span id="footText"></span>
+      </div>
+      <div>纵轴：人生指数（0—100）</div>
+    </div>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span>关键节点<span class="cnt" id="evCount"></span></div>
+  <div class="events" id="events"></div>
+
+</div>
+<script src="data/example.js"></script>
+<script>
+(function(){
+  if (location.search.indexOf("preview") < 0) return;
+  try{
+    var t = localStorage.getItem("lk_preview");
+    if (t){
+      (0, eval)(t);
+      var bar = document.createElement("div");
+      bar.textContent = "预览模式 · 数据来自 csv2js.html，未写入任何文件";
+      bar.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:99;font:12px/1.5 -apple-system,'PingFang SC',sans-serif;color:#0a0d13;background:#f0b90b;padding:6px 12px;border-radius:8px";
+      document.body.appendChild(bar);
+    }
+  }catch(e){}
+})();
+</script>
+<script src="assets/engine.js"></script>
+</body>
+</html>

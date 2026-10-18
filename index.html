@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人生 K 线 · 把一段人生画成蜡烛图</title>
+<style>
+  :root{
+    --bg:#0a0d13;--line:#232b3a;--txt:#e9edf5;--dim:#8b94a7;
+    --acc:#3b82f6;--gold:#f0b90b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:56px 18px 70px;background:
+      radial-gradient(1100px 600px at 18% -12%, #17203a 0%, rgba(10,13,19,0) 60%),
+      radial-gradient(800px 500px at 92% 108%, #10262a 0%, rgba(10,13,19,0) 60%),
+      var(--bg);
+    color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(240,185,11,.14);display:inline-block;margin-right:10px;vertical-align:middle}
+  h1{font-size:26px;margin:0 0 12px;letter-spacing:.5px;font-weight:650}
+  .lead{font-size:14px;color:#b3bccd;line-height:1.95;margin:0 0 34px;max-width:690px}
+  .lead b{color:var(--gold);font-weight:600}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:36px}
+  a.card{
+    display:block;text-decoration:none;color:inherit;background:linear-gradient(180deg,#141a26,#101520);
+    border:1px solid #1f2736;border-radius:14px;padding:20px;transition:.18s;
+  }
+  a.card:hover{border-color:#2f405c;transform:translateY(-2px);box-shadow:0 16px 40px -24px #000}
+  a.card .k{font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:9px}
+  a.card h3{font-size:15.5px;margin:0 0 8px;font-weight:650}
+  a.card p{font-size:12.5px;color:var(--dim);line-height:1.75;margin:0}
+  .sec{font-size:13px;color:#c3cbdb;font-weight:600;margin:0 0 12px;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+  .sec::before{content:"";width:3px;height:13px;background:var(--gold);border-radius:2px}
+  ol.steps{margin:0;padding-left:20px;font-size:13px;color:#b3bccd;line-height:2.1}
+  ol.steps code{background:#0c111a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12px;color:#a8b3c7}
+  .foot{margin-top:44px;padding-top:18px;border-top:1px solid #1c2432;font-size:11.5px;color:#5d667a;line-height:1.9}
+  .foot a{color:#5d667a}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="dot"></span>人生 K 线</h1>
+  <p class="lead">
+    把一段人生，画成一张 K 线图。<br>
+    学历、财富、心态、技能、思想、身体——六个维度加权成一个指数，出生记 0 分，
+    此后每一次上涨和崩盘，都落在具体的月份上。<br>
+    红是往上，绿是往下；<b>那根特别长的上影线，往往是一段「以为要成了」的日子</b>。
+  </p>
+
+  <div class="grid">
+    <a class="card" href="example.html">
+      <div class="k">EXAMPLE</div>
+      <h3>先看一个示例</h3>
+      <p>一个虚构的普通人，1995—2025。看看一条人生曲线长什么样、怎么读。</p>
+    </a>
+    <a class="card" href="csv2js.html">
+      <div class="k">MAKE YOURS</div>
+      <h3>做一张自己的</h3>
+      <p>可视化编辑器：六维、均线周期、跳空影线、时代分期都能改；也能反解已有的数据文件。</p>
+    </a>
+  </div>
+
+  <div class="sec">三步做出自己的</div>
+  <ol class="steps">
+    <li>用 Excel / WPS 打开 <code>data/template.csv</code>，按格式填年月、六个分数和事件。<br>
+        <span style="color:#6b7488;font-size:12px">只写关键节点就行，相邻两行之间会自动插值。也可以直接在网页里加行、改数。</span></li>
+    <li>拖进 <a href="csv2js.html" style="color:#3b82f6">csv2js.html</a>。分段会按学段自动填好，改个名字就行。</li>
+    <li>点「生成」→「预览图表」看效果，满意后点 <b>「保存并覆盖文件」</b>，直接选到 <code>data/</code> 下的同名文件覆盖——不用手动改名。</li>
+  </ol>
+
+  <div class="sec">已经有数据文件了？</div>
+  <p style="font-size:13.5px;color:#8b94a7;line-height:1.9;margin:0 0 4px">
+    把 <code>data/example.js</code> 或任何生成过的 <code>.html</code> 拖进编辑器，它会反解出六维、标签、事件、
+    跳空针、均线参数和分期，还原成可编辑的表格——改完再导出。
+  </p>
+
+  <div class="foot">
+    纯前端：无后端、无依赖、无网络请求，双击 HTML 就能看。所有数据只在你自己的电脑上。<br>
+    MIT License
+  </div>
+</div>
+</body>
+</html>

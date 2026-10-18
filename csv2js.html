@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人生 K 线 · 编辑器</title>
+<style>
+  :root{
+    --bg:#0a0d13;--card:#121722;--line:#232b3a;--txt:#e9edf5;--dim:#8b94a7;
+    --up:#ff4d5e;--down:#26c281;--acc:#3b82f6;--gold:#f0b90b;--ok:#26c281;
+    --cell:#0c111a;--row:#0e131c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:26px 16px 80px;background:
+      radial-gradient(1000px 500px at 20% -10%, #17203a 0%, rgba(10,13,19,0) 60%), var(--bg);
+    color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:19px;margin:0 0 6px;letter-spacing:.4px}
+  .sub{font-size:12.5px;color:var(--dim);line-height:1.8;margin-bottom:16px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .tabs button{
+    border:0;background:transparent;color:var(--dim);padding:10px 14px;font-size:13px;
+    cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;border-radius:0;
+  }
+  .tabs button.on{color:var(--txt);border-bottom-color:var(--acc)}
+  .tabs button:hover{color:var(--txt)}
+  .card{background:linear-gradient(180deg,#131926,#10141d);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button{
+    border:1px solid var(--line);background:linear-gradient(180deg,#1b2434,#141a26);color:var(--txt);
+    padding:8px 15px;border-radius:9px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  button:hover{border-color:var(--acc)}
+  button.main{background:linear-gradient(180deg,#2563eb,#1d4ed8);border-color:#2563eb;font-weight:600}
+  button.go{background:linear-gradient(180deg,#1f9d6b,#17845a);border-color:#1f9d6b;font-weight:600}
+  button.ghost{background:transparent;border-style:dashed;color:#93a0b6}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.danger:hover{border-color:var(--up);color:var(--up)}
+  .note{font-size:11.5px;color:#6b7488;line-height:1.85;margin-top:10px}
+  .status{font-size:12px;margin-top:10px;min-height:18px;line-height:1.7}
+  .ok{color:var(--ok)} .err{color:#ff6b7a}
+  code{background:#0c111a;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11.5px;color:#a8b3c7}
+  h2{font-size:13px;color:#c3cbdb;margin:0 0 12px;font-weight:600;letter-spacing:.3px}
+  label.f{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:#7f8a9e}
+  input,select,textarea{
+    background:var(--cell);border:1px solid var(--line);border-radius:8px;color:#e9edf5;
+    padding:7px 9px;font-family:inherit;font-size:13px;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#31456b}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  .drop{
+    border:1.5px dashed #2b3548;border-radius:12px;padding:26px;text-align:center;
+    color:var(--dim);font-size:13px;cursor:pointer;transition:.15s;
+  }
+  .drop:hover,.drop.on{border-color:var(--acc);color:var(--txt);background:rgba(59,130,246,.05)}
+  .drop b{color:var(--gold);font-weight:600}
+
+  .thead{
+    display:grid;grid-template-columns:66px 58px repeat(6,62px) minmax(120px,1fr) 30px 30px;
+    gap:6px;padding:0 10px 8px;font-size:10.5px;color:#5d667a;letter-spacing:.5px;
+  }
+  .arow{
+    background:var(--row);border:1px solid #1c2432;border-radius:10px;padding:9px 10px;margin-bottom:7px;
+  }
+  .arow .g1{
+    display:grid;grid-template-columns:66px 58px repeat(6,62px) minmax(120px,1fr) 30px 30px;
+    gap:6px;align-items:center;
+  }
+  .arow input{width:100%;padding:6px 7px;font-size:12.5px;text-align:center}
+  .arow input.txt{text-align:left}
+  .arow .notein{width:100%;margin-top:6px;text-align:left;font-size:12px;color:#b9c2d3}
+  .arow .g2{display:flex;gap:6px;align-items:center;margin-top:6px}
+  .arow .g2 input{width:70px}
+  .arow .del{width:26px;height:26px;padding:0;border-radius:7px;border:1px solid #2a3242;background:transparent;color:#7a8397;font-size:14px;line-height:1}
+  .arow .ovbtn{width:30px;height:26px;padding:0;border-radius:7px;font-size:11px;border:1px solid #2a3242;background:transparent;color:#7a8397}
+  .arow .ovbtn.on{border-color:var(--gold);color:var(--gold)}
+  .arow .hide{display:none}
+  .stat{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#6b7488;margin-top:6px}
+  .stat b{color:#9aa4b8;font-weight:500}
+  .grp{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .stage-row{
+    display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:9px 10px;background:var(--row);border:1px solid #1c2432;border-radius:10px;margin-bottom:8px;
+  }
+  .stage-row .idx{width:18px;font-size:11px;color:#5d667a;text-align:center;flex:0 0 18px}
+  .stage-row .sname{width:118px;flex:0 0 118px}
+  .stage-row .yr{width:82px;flex:0 0 82px;text-align:center}
+  .stage-row select{width:60px;flex:0 0 60px;padding:7px 6px}
+  .stage-row .arrow{color:#4a5468;font-size:12px}
+  .stage-row .del{width:26px;height:26px;flex:0 0 26px;padding:0;border-radius:7px;border:1px solid #2a3242;background:transparent;color:#7a8397;font-size:14px;line-height:1}
+  .empty{font-size:12px;color:#5d667a;border:1px dashed #232b3a;border-radius:10px;padding:18px;text-align:center}
+  .pane{display:none}
+  .pane.on{display:block}
+  details summary{font-size:12px;color:#7a8397;cursor:pointer}
+  .csvin{width:100%;min-height:120px;font:12px/1.7 ui-monospace,Consolas,monospace}
+  .hint{font-size:11px;color:#5d667a;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>人生 K 线 · 编辑器</h1>
+  <div class="sub">
+    六维、均线、跳空影线、时代分期，全部可改；也能反解已有的数据文件，改完再导出。全程在本机完成。
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="on" data-t="data">① 数据</button>
+    <button data-t="chart">② 图表</button>
+    <button data-t="stage">③ 分期</button>
+    <button data-t="out">④ 导出</button>
+  </div>
+
+  <div class="pane on" id="pane-data">
+    <div class="card">
+      <div class="row">
+        <label class="drop" id="drop" style="flex:1">
+          拖入 <b>CSV</b> 表格，或已有的 <b>data.js / .html</b>（会自动识别并还原）<br>
+          <span style="font-size:11.5px">也可以直接点这里选文件</span>
+          <input type="file" id="file" accept=".csv,.js,.html,.txt" hidden>
+        </label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="demoBtn">载入示例</button>
+        <a href="data/template.csv" download style="font-size:12.5px;color:#7ea6e8;text-decoration:none;border-bottom:1px dashed #2c4a78">下载模板 CSV</a>
+        <button id="addRow" class="ghost">+ 加一个节点</button>
+        <button id="dlCsv" class="ghost">导出 CSV</button>
+      </div>
+      <div class="status" id="st1"></div>
+    </div>
+
+    <div class="card">
+      <h2>锚点（只写关键月份，中间会自动插值）</h2>
+      <div class="thead">
+        <span>年</span><span>月</span><span>学历</span><span>财富</span>
+        <span>心态</span><span>技能</span><span>思想</span><span>身体</span><span>标签</span><span>针</span><span></span>
+      </div>
+      <div id="rows"></div>
+      <div class="stat" id="stat"></div>
+      <div class="note">
+        六个分数都是 0—100，出生那行写 0。「标签」是图上那个金色小标签（2—4 字最好）。
+        最右边那个 <b>针</b> 按钮可以手写开盘 / 最高 / 最低——想做一根超长上影线、或者一个跳空缺口，就在这里填。
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="pane-chart">
+    <div class="card">
+      <h2>标题与财富</h2>
+      <div class="row">
+        <label class="f" style="flex:1;min-width:240px">图表标题
+          <input id="title" type="text" value="我的人生 K 线">
+        </label>
+        <label class="f">「财富」列填的是
+          <select id="weaMode">
+            <option value="k">金额（千元 K）</option>
+            <option value="score">分数 0—100</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>均线</h2>
+      <div class="row">
+        <label class="f">MA 周期
+          <input id="maN" type="number" value="50" min="2" max="200">
+        </label>
+        <label class="f">EMA 周期
+          <input id="emaN" type="number" value="15" min="2" max="200">
+        </label>
+        <label class="f">副图
+          <select id="subOn">
+            <option value="1">显示月度变动</option>
+            <option value="0">不显示</option>
+          </select>
+        </label>
+      </div>
+      <div class="note">
+        MA 是简单移动平均（默认 50 个月，长趋势），EMA 是指数移动平均（默认 15 个月，对转折更敏感）。
+        周期填大，线更平；填小，跟得更紧。均线颜色由 <code>assets/style.css</code> 里的
+        <code>--ma</code> / <code>--ema</code> 决定。
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>时间范围</h2>
+      <div class="row">
+        <label class="f">起始年 <input id="y0" type="number" placeholder="自动"></label>
+        <label class="f">起始月 <input id="m0" type="number" placeholder="自动" min="1" max="12"></label>
+        <label class="f">结束年 <input id="lastY" type="number" placeholder="自动"></label>
+        <label class="f">结束月 <input id="lastM" type="number" placeholder="自动" min="1" max="12"></label>
+      </div>
+      <div class="note">留空就用数据第一行和最后一行。一般不用管，除非你想让曲线多出一段空白。</div>
+    </div>
+  </div>
+
+  <div class="pane" id="pane-stage">
+    <div class="card">
+      <h2>时代分期</h2>
+      <div class="row">
+        <button id="segEdu">按学段自动分</button>
+        <button id="segEven">均分四段</button>
+        <button id="addStage" class="ghost">+ 加一段</button>
+        <button id="clearStage" class="ghost">清空</button>
+      </div>
+      <div id="stageList" style="margin-top:14px"></div>
+      <div class="note">
+        每一段是图表顶部的一条色带和一个切换按钮。名字随便起。全清空也没关系，图表照常显示。
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="pane-out">
+    <div class="card">
+      <div class="row">
+        <button class="main" id="gen">生成数据</button>
+        <button id="preview" disabled>预览图表</button>
+        <button class="go" id="save" disabled>保存并覆盖文件</button>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label class="f">文件名
+          <input id="fname" type="text" value="" style="width:160px">
+        </label>
+        <span class="note" style="margin:14px 0 0">放在项目 <code>data/</code> 目录里，覆盖那个文件名</span>
+      </div>
+      <div class="status" id="st2"></div>
+      <div class="note">
+        点「保存并覆盖文件」会弹出系统保存窗口：选到项目的 <code>data</code> 文件夹，文件名保持
+        <code id="defname">example.js</code>，保存时系统问「已存在，要替换吗」，选替换即可。
+        之后这个页面会记住位置，再点一下就<b style="color:var(--gold)">直接覆盖</b>。
+      </div>
+    </div>
+
+    <div class="card">
+      <details>
+        <summary>看看生成的代码</summary>
+        <textarea id="out" readonly class="csvin" style="margin-top:10px" placeholder="生成后这里显示内容"></textarea>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var rowsEl = $("rows"), statEl = $("stat");
+  var stageList = $("stageList");
+  var outEl = $("out"), st1 = $("st1"), st2 = $("st2");
+
+  var ROWS = [];
+  var FILE_NAME = "";
+  var DEF_NAME = "example.js";
+
+  function say(el, txt, cls){ el.textContent = txt; el.className = "status " + (cls || ""); }
+
+  function parseCSV(text){
+    var out = [], row = [], cur = "", q = false;
+    for (var i = 0; i < text.length; i++){
+      var ch = text[i];
+      if (q){
+        if (ch === '"'){
+          if (text[i + 1] === '"'){ cur += '"'; i++; } else q = false;
+        } else cur += ch;
+      } else {
+        if (ch === '"') q = true;
+        else if (ch === ','){ row.push(cur); cur = ""; }
+        else if (ch === '\n'){ row.push(cur); out.push(row); row = []; cur = ""; }
+        else if (ch !== '\r') cur += ch;
+      }
+    }
+    if (cur !== "" || row.length){ row.push(cur); out.push(row); }
+    return out.filter(function(r){ return r.join("").trim() !== ""; });
+  }
+
+  var MAP = [
+    ["y", ["年", "年份", "year"]],
+    ["m", ["月", "月份", "month"]],
+    ["edu", ["学历", "教育", "edu"]],
+    ["wea", ["财富", "财富k", "wealth", "钱"]],
+    ["mind", ["心态", "心理", "mind"]],
+    ["skill", ["技能", "skill"]],
+    ["thought", ["思想", "认知", "thought"]],
+    ["body", ["身体", "体能", "body"]],
+    ["label", ["标签", "事件名", "label"]],
+    ["note", ["事件", "说明", "描述", "备注", "note"]],
+    ["o", ["开", "开盘", "open"]],
+    ["h", ["高", "最高", "high"]],
+    ["l", ["低", "最低", "low"]]
+  ];
+
+  function num(v, dflt){
+    var n = parseFloat(v);
+    return isNaN(n) ? (dflt === undefined ? 0 : dflt) : n;
+  }
+
+  function fromCSV(text){
+    var all = parseCSV(text);
+    if (!all.length) return null;
+    var head = all[0].map(function(s){ return String(s).replace(/^\uFEFF/, "").trim().toLowerCase(); });
+    var isHead = head.indexOf("年") >= 0 || head.indexOf("year") >= 0;
+    var body = isHead ? all.slice(1) : all;
+    var idx = {};
+
+    if (isHead){
+      MAP.forEach(function(pair){
+        for (var i = 0; i < head.length; i++){
+          if (pair[1].indexOf(head[i]) >= 0){ idx[pair[0]] = i; break; }
+        }
+      });
+    } else {
+      ["y","m","edu","wea","mind","skill","thought","body","label","note","o","h","l"].forEach(function(k, i){ idx[k] = i; });
+    }
+
+    var out = [];
+    body.forEach(function(r){
+      var y = parseInt(r[idx.y], 10);
+      if (isNaN(y)) return;
+      var row = {
+        y: y, m: parseInt(r[idx.m], 10) || 1,
+        edu: num(r[idx.edu]), wea: num(r[idx.wea]), mind: num(r[idx.mind]),
+        skill: num(r[idx.skill]), thought: num(r[idx.thought]), body: num(r[idx.body]),
+        label: (r[idx.label] || "").trim(), note: (r[idx.note] || "").trim(),
+        o: null, h: null, l: null
+      };
+      if (idx.o != null && String(r[idx.o] || "").trim() !== "") row.o = num(r[idx.o]);
+      if (idx.h != null && String(r[idx.h] || "").trim() !== "") row.h = num(r[idx.h]);
+      if (idx.l != null && String(r[idx.l] || "").trim() !== "") row.l = num(r[idx.l]);
+      out.push(row);
+    });
+    return out;
+  }
+
+  function extractBlock(text){
+    var i = text.indexOf("window.KLINE_DATA");
+    if (i < 0) return null;
+    var eq = text.indexOf("{", text.indexOf("=", i));
+    if (eq < 0) return null;
+    var depth = 0, q = null, esc = false;
+    for (var p = eq; p < text.length; p++){
+      var ch = text[p];
+      if (q){
+        if (esc) esc = false;
+        else if (ch === "\\") esc = true;
+        else if (ch === q) q = null;
+        continue;
+      }
+      if (ch === '"' || ch === "'" || ch === "`"){ q = ch; continue; }
+      if (ch === "{") depth++;
+      else if (ch === "}"){
+        depth--;
+        if (depth === 0) return text.slice(i, p + 1) + ";";
+      }
+    }
+    return null;
+  }
+
+  function fromJS(text){
+    var block = extractBlock(text);
+    if (!block) return null;
+    var box = {};
+    var data;
+    try{
+      data = new Function("window", block + "\nreturn window.KLINE_DATA;")(box);
+    }catch(e){ return null; }
+    if (!data || !data.anchors) return null;
+
+    if (data.title) $("title").value = data.title;
+    if (data.weaMode) $("weaMode").value = data.weaMode;
+
+    var ind = data.indicators || {};
+    $("maN").value = ind.ma || 12;
+    if (ind.ema) $("emaN").value = ind.ema;
+    $("subOn").value = ind.sub ? "1" : "0";
+    $("y0").value = data.y0 || "";
+    $("m0").value = data.m0 || "";
+    $("lastY").value = data.lastY || "";
+    $("lastM").value = data.lastM || "";
+
+    if (data.stages && data.stages.length){
+      renderStages(data.stages.map(function(s){
+        return { name: s.name, from: [s.from[0], s.from[1]], to: [s.to[0], s.to[1]] };
+      }));
+    }
+
+    return data.anchors.map(function(r){
+      var ov = r[10] || null;
+      return {
+        y: r[0], m: r[1],
+        edu: r[2], wea: r[3], mind: r[4], skill: r[5], thought: r[6], body: r[7],
+        label: r[8] || "", note: r[9] || "",
+        o: ov && ov.o != null ? ov.o : null,
+        h: ov && ov.h != null ? ov.h : null,
+        l: ov && ov.l != null ? ov.l : null
+      };
+    });
+  }
+
+  function sortRows(){
+    ROWS.sort(function(a, b){ return (a.y * 12 + a.m) - (b.y * 12 + b.m); });
+  }
+
+  function makeRow(r){
+    var d = document.createElement("div");
+    d.className = "arow";
+    d.innerHTML =
+      '<div class="g1">' +
+        '<input class="t y" type="number" value="' + r.y + '">' +
+        '<input class="t m" type="number" value="' + r.m + '" min="1" max="12">' +
+        '<input class="t edu" type="number" value="' + r.edu + '">' +
+        '<input class="t wea" type="number" value="' + r.wea + '">' +
+        '<input class="t mind" type="number" value="' + r.mind + '">' +
+        '<input class="t skill" type="number" value="' + r.skill + '">' +
+        '<input class="t thought" type="number" value="' + r.thought + '">' +
+        '<input class="t body" type="number" value="' + r.body + '">' +
+        '<input class="txt lb" type="text" value="' + esc(r.label) + '" placeholder="标签">' +
+        '<button class="ovbtn' + (r.o != null || r.h != null || r.l != null ? " on" : "") + '" title="开盘 / 最高 / 最低">针</button>' +
+        '<button class="del" title="删除">×</button>' +
+      '</div>' +
+      '<input class="txt notein nt" type="text" value="' + esc(r.note) + '" placeholder="这个月发生了什么（会显示在悬停和字幕里）">' +
+      '<div class="g2 hide ovp">' +
+        '<span style="font-size:11px;color:#6b7488">开</span><input class="t o" type="number" value="' + (r.o == null ? "" : r.o) + '" placeholder="—">' +
+        '<span style="font-size:11px;color:#6b7488">高</span><input class="t h" type="number" value="' + (r.h == null ? "" : r.h) + '" placeholder="—">' +
+        '<span style="font-size:11px;color:#6b7488">低</span><input class="t l" type="number" value="' + (r.l == null ? "" : r.l) + '" placeholder="—">' +
+        '<span class="hint">留空 = 自动生成</span>' +
+      '</div>';
+
+    d.querySelector(".del").addEventListener("click", function(){
+      d.remove();
+      syncFromDOM();
+    });
+    d.querySelector(".ovbtn").addEventListener("click", function(){
+      var p = d.querySelector(".ovp");
+      p.classList.toggle("hide");
+      this.classList.toggle("on", !p.classList.contains("hide"));
+    });
+    if (r.o != null || r.h != null || r.l != null){
+      d.querySelector(".ovp").classList.remove("hide");
+    }
+    return d;
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderRows(){
+    rowsEl.innerHTML = "";
+    if (!ROWS.length){
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = "还没有数据。拖入 CSV，或点上面的「载入示例」。";
+      rowsEl.appendChild(e);
+    } else {
+      ROWS.forEach(function(r){ rowsEl.appendChild(makeRow(r)); });
+    }
+    updateStat();
+  }
+
+  function syncFromDOM(){
+    var kids = rowsEl.querySelectorAll(".arow");
+    var out = [];
+    [].forEach.call(kids, function(k){
+      var g = function(cls){ return k.querySelector("." + cls).value; };
+      var o = g("o"), h = g("h"), l = g("l");
+      out.push({
+        y: parseInt(g("y"), 10) || 2000,
+        m: parseInt(g("m"), 10) || 1,
+        edu: num(g("edu")), wea: num(g("wea")), mind: num(g("mind")),
+        skill: num(g("skill")), thought: num(g("thought")), body: num(g("body")),
+        label: g("lb").trim(), note: g("nt").trim(),
+        o: o === "" ? null : num(o),
+        h: h === "" ? null : num(h),
+        l: l === "" ? null : num(l)
+      });
+    });
+    ROWS = out;
+    updateStat();
+  }
+
+  function updateStat(){
+    if (!ROWS.length){ statEl.innerHTML = ""; return; }
+    var ys = ROWS.map(function(r){ return r.y * 12 + r.m; });
+    var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys);
+    var pins = ROWS.filter(function(r){ return r.o != null || r.h != null || r.l != null; }).length;
+    statEl.innerHTML =
+      "<span>节点 <b>" + ROWS.length + "</b></span>" +
+      "<span>跨度 <b>" + (hi - lo + 1) + " 个月</b></span>" +
+      "<span>手写针 <b>" + pins + "</b></span>" +
+      "<span>中间月份自动插值</span>";
+  }
+
+  function setRows(list, msg){
+    ROWS = list || [];
+    sortRows();
+    renderRows();
+    if (msg) say(st1, msg, "ok");
+  }
+
+  function readFile(f){
+    FILE_NAME = f.name || "";
+    var fr = new FileReader();
+    fr.onload = function(){
+      var buf = fr.result;
+      var text = new TextDecoder("utf-8").decode(buf);
+      if (text.indexOf("\uFFFD") >= 0){
+        try { text = new TextDecoder("gbk").decode(buf); } catch(e){}
+      }
+      handleText(text, FILE_NAME);
+    };
+    fr.readAsArrayBuffer(f);
+  }
+
+  function handleText(text, name){
+    text = String(text).replace(/^\uFEFF/, "");
+    var lower = (name || "").toLowerCase();
+    var isJs = /\.(js|html?)$/.test(lower) || text.indexOf("window.KLINE_DATA") >= 0;
+
+    if (isJs){
+      var list = fromJS(text);
+      if (!list){
+        say(st1, "这个文件里没找到 window.KLINE_DATA，可能不是数据文件。", "err");
+        return;
+      }
+      setRows(list, "已还原 " + list.length + " 个节点（含均线参数与分期）。文件名 " + (name || "—") +
+        "，改完记得重新生成。");
+      var base = (name || "").replace(/\.[^.]+$/, "");
+      if (base) $("fname").value = base + ".js";
+      return;
+    }
+
+    var rows = fromCSV(text);
+    if (!rows || !rows.length){
+      say(st1, "没读到有效数据，检查一下第一列是不是年份。", "err");
+      return;
+    }
+    setRows(rows, "读到 " + rows.length + " 个节点。分段已按学段填好，去 ③ 改名字。");
+    renderStages(autoEdu());
+  }
+
+  function ym2i(y, m){ return y * 12 + (m - 1); }
+  function i2ym(i){ return { y: Math.floor(i / 12), m: (i % 12) + 1 }; }
+
+  function dataRange(){
+    if (!ROWS.length) return null;
+    var ys = ROWS.map(function(r){ return ym2i(r.y, r.m); });
+    return { a: Math.min.apply(null, ys), b: Math.max.apply(null, ys) };
+  }
+
+  function clip(a, b){
+    var rg = dataRange();
+    if (!rg) return null;
+    if (b < rg.a || a > rg.b) return null;
+    a = Math.max(a, rg.a); b = Math.min(b, rg.b);
+    if (b < a) return null;
+    return [i2ym(a), i2ym(b)];
+  }
+
+  function autoEdu(){
+    var rg = dataRange();
+    if (!rg) return [];
+    var born = rg.a;
+    var table = [["幼年",0,5],["小学",6,11],["初中",12,14],["高中",15,17],["大学",18,21]];
+    var out = [];
+    table.forEach(function(t){
+      var seg = clip(born + t[1] * 12, born + t[2] * 12 + 11);
+      if (seg) out.push({ name: t[0], from: [seg[0].y, seg[0].m], to: [seg[1].y, seg[1].m] });
+    });
+    var tail = clip(born + 22 * 12, rg.b);
+    if (tail && rg.b > born + 22 * 12){
+      out.push({ name: "毕业之后", from: [tail[0].y, tail[0].m], to: [tail[1].y, tail[1].m] });
+    }
+    return out;
+  }
+
+  function autoEven(n){
+    var rg = dataRange();
+    if (!rg) return [];
+    var span = rg.b - rg.a + 1, out = [];
+    for (var i = 0; i < n; i++){
+      var s = rg.a + Math.floor(i * span / n);
+      var e = Math.min(rg.b, rg.a + Math.floor((i + 1) * span / n) - 1);
+      if (e < s) e = s;
+      var p = i2ym(s), q = i2ym(e);
+      out.push({ name: "第 " + (i + 1) + " 段", from: [p.y, p.m], to: [q.y, q.m] });
+    }
+    return out;
+  }
+
+  function monthOptions(sel){
+    var s = "";
+    for (var m = 1; m <= 12; m++) s += '<option value="' + m + '"' + (m === sel ? " selected" : "") + '>' + m + "月</option>";
+    return s;
+  }
+
+  function makeStageRow(st){
+    var d = document.createElement("div");
+    d.className = "stage-row";
+    d.innerHTML =
+      '<span class="idx"></span>' +
+      '<input class="sname" type="text" value="' + esc(st.name) + '" placeholder="阶段名">' +
+      '<input class="yr sy" type="number" value="' + st.from[0] + '">' +
+      '<select class="sm">' + monthOptions(st.from[1]) + '</select>' +
+      '<span class="arrow">→</span>' +
+      '<input class="yr ty" type="number" value="' + st.to[0] + '">' +
+      '<select class="tm">' + monthOptions(st.to[1]) + '</select>' +
+      '<button class="del" title="删除">×</button>';
+    d.querySelector(".del").addEventListener("click", function(){ d.remove(); renumber(); });
+    return d;
+  }
+
+  function renderStages(list){
+    stageList.innerHTML = "";
+    if (!list.length){
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = "还没有分段。点「按学段自动分」或「+ 加一段」。";
+      stageList.appendChild(e);
+    } else {
+      list.forEach(function(s){ stageList.appendChild(makeStageRow(s)); });
+    }
+    renumber();
+  }
+
+  function renumber(){
+    [].forEach.call(stageList.querySelectorAll(".stage-row"), function(k, i){
+      k.querySelector(".idx").textContent = i + 1;
+    });
+  }
+
+  function collectStages(){
+    var out = [];
+    [].forEach.call(stageList.querySelectorAll(".stage-row"), function(k){
+      var name = k.querySelector(".sname").value.trim();
+      var sy = parseInt(k.querySelector(".sy").value, 10);
+      var sm = parseInt(k.querySelector(".sm").value, 10);
+      var ty = parseInt(k.querySelector(".ty").value, 10);
+      var tm = parseInt(k.querySelector(".tm").value, 10);
+      if (!name || isNaN(sy) || isNaN(ty)) return;
+      out.push({ name: name, from: [sy, sm], to: [ty, tm] });
+    });
+    return out;
+  }
+
+  function buildJS(){
+    if (!ROWS.length) return "";
+    var rg = dataRange();
+    var list = ROWS.slice().sort(function(a, b){ return ym2i(a.y, a.m) - ym2i(b.y, b.m); });
+    var y0 = parseInt($("y0").value, 10) || i2ym(rg.a).y;
+    var m0 = parseInt($("m0").value, 10) || i2ym(rg.a).m;
+    var ly = parseInt($("lastY").value, 10) || i2ym(rg.b).y;
+    var lm = parseInt($("lastM").value, 10) || i2ym(rg.b).m;
+
+    var ind = '  indicators: { ma: ' + (parseInt($("maN").value, 10) || 12) +
+              ', ema: ' + (parseInt($("emaN").value, 10) || 15) +
+              ', sub: ' + ($("subOn").value === "1") + ' },\n\n';
+    var wea = $("weaMode").value === "score" ? '  weaMode: "score",\n\n' : "";
+
+    var stages = collectStages();
+    var stageText = stages.map(function(s, i){
+      return '    { key:"s' + i + '", name:"' + s.name.replace(/"/g, "'") + '", from:[' +
+        s.from[0] + ',' + s.from[1] + '], to:[' + s.to[0] + ',' + s.to[1] + '] }';
+    }).join(",\n");
+
+    var anchorText = list.map(function(r){
+      var base = '    [' + r.y + ', ' + r.m + ', ' + r.edu + ', ' + r.wea + ', ' + r.mind + ', ' +
+        r.skill + ', ' + r.thought + ', ' + r.body + ',  "' +
+        r.label.replace(/"/g, "'") + '", "' + r.note.replace(/"/g, "'") + '"';
+      if (r.o != null || r.h != null || r.l != null){
+        var parts = [];
+        if (r.o != null) parts.push("o: " + r.o);
+        if (r.h != null) parts.push("h: " + r.h);
+        if (r.l != null) parts.push("l: " + r.l);
+        base += ', {' + parts.join(", ") + '}';
+      }
+      return base + ']';
+    }).join(",\n");
+
+    return '/* 由编辑器生成。想直接手改也可以，格式见 README。 */\n\n' +
+      'window.KLINE_DATA = {\n' +
+      '  title: "' + $("title").value.replace(/"/g, "'") + '",\n\n' +
+      '  y0: ' + y0 + ', m0: ' + m0 + ',\n' +
+      '  lastY: ' + ly + ', lastM: ' + lm + ',\n\n' +
+      wea + ind +
+      '  stages: [\n' + stageText + '\n  ],\n\n' +
+      '  anchors: [\n' + anchorText + '\n  ]\n};\n';
+  }
+
+  function buildCSV(){
+    var head = "年,月,学历,财富,心态,技能,思想,身体,标签,事件,开,高,低";
+    var list = ROWS.slice().sort(function(a, b){ return ym2i(a.y, a.m) - ym2i(b.y, b.m); });
+    var lines = list.map(function(r){
+      var q = function(s){ return '"' + String(s).replace(/"/g, '""') + '"'; };
+      return [r.y, r.m, r.edu, r.wea, r.mind, r.skill, r.thought, r.body,
+        q(r.label), q(r.note),
+        r.o == null ? "" : r.o, r.h == null ? "" : r.h, r.l == null ? "" : r.l].join(",");
+    });
+    return head + "\n" + lines.join("\n");
+  }
+
+  function download(name, text, mime){
+    var blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  $("tabs").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-t]");
+    if (!b) return;
+    [].forEach.call(this.querySelectorAll("button"), function(x){ x.classList.toggle("on", x === b); });
+    [].forEach.call(document.querySelectorAll(".pane"), function(p){
+      p.classList.toggle("on", p.id === "pane-" + b.dataset.t);
+    });
+  });
+
+  $("addRow").addEventListener("click", function(){
+    syncFromDOM();
+    var rg = dataRange() || { a: ym2i(2000, 1), b: ym2i(2020, 12) };
+    var last = ROWS[ROWS.length - 1];
+    var lastC = last ? Math.max(last.edu, last.mind, last.thought) : 0;
+    var p = i2ym(last ? ym2i(last.y, last.m) + 1 : rg.a);
+    ROWS.push({
+      y: p.y, m: p.m,
+      edu: last ? last.edu : 0, wea: last ? last.wea : 0, mind: last ? last.mind : 0,
+      skill: last ? last.skill : 0, thought: last ? last.thought : 0, body: last ? last.body : 0,
+      label: "", note: "", o: null, h: null, l: null
+    });
+    renderRows();
+    var kids = rowsEl.querySelectorAll(".arow");
+    if (kids.length) kids[kids.length - 1].scrollIntoView({ block: "center" });
+  });
+
+  $("dlCsv").addEventListener("click", function(){
+    syncFromDOM();
+    if (!ROWS.length) return;
+    download("life-kline.csv", buildCSV(), "text/csv;charset=utf-8");
+    say(st1, "已导出 CSV，可以用 Excel 打开接着改。", "ok");
+  });
+
+  $("gen").addEventListener("click", function(){
+    syncFromDOM();
+    if (!ROWS.length){ say(st2, "先在 ① 里填数据。", "err"); return; }
+    outEl.value = buildJS();
+    $("save").disabled = false;
+    $("preview").disabled = false;
+    say(st2, "已生成 " + ROWS.length + " 个节点。先点「预览图表」看一眼，满意再保存。", "ok");
+  });
+
+  $("preview").addEventListener("click", function(){
+    if (!outEl.value) return;
+    try{ localStorage.setItem("lk_preview", outEl.value); }
+    catch(e){ say(st2, "这个浏览器禁止了本地存储，没法预览，直接保存吧。", "err"); return; }
+    window.open("example.html?preview=1", "_blank");
+    say(st2, "已在新标签页打开预览（数据没有写入文件）。", "ok");
+  });
+
+  var fsOK = (typeof window.showSaveFilePicker === "function");
+
+  function openDB(){
+    return new Promise(function(res, rej){
+      var rq = indexedDB.open("lk-file", 1);
+      rq.onupgradeneeded = function(){ rq.result.createObjectStore("h"); };
+      rq.onsuccess = function(){ res(rq.result); };
+      rq.onerror = function(){ rej(rq.error); };
+    });
+  }
+  function idbGet(k){
+    return openDB().then(function(db){
+      return new Promise(function(res){
+        var t = db.transaction("h", "readonly").objectStore("h").get(k);
+        t.onsuccess = function(){ res(t.result || null); };
+        t.onerror = function(){ res(null); };
+      });
+    }).catch(function(){ return null; });
+  }
+  function idbPut(k, v){
+    return openDB().then(function(db){
+      return new Promise(function(res){
+        var tx = db.transaction("h", "readwrite");
+        tx.objectStore("h").put(v, k);
+        tx.oncomplete = function(){ res(true); };
+        tx.onerror = function(){ res(false); };
+      });
+    }).catch(function(){ return false; });
+  }
+
+  var savedHandle = null;
+  idbGet("target").then(function(h){ savedHandle = h; });
+
+  $("save").addEventListener("click", async function(){
+    var text = outEl.value;
+    if (!text) return;
+    var name = ($("fname").value || DEF_NAME).trim() || DEF_NAME;
+    if (!/\.js$/i.test(name)) name += ".js";
+
+    if (!fsOK){
+      download(name, text, "text/javascript;charset=utf-8");
+      say(st2, "已下载 " + name + "。当前浏览器不支持直接覆盖，需要你手动替换。", "ok");
+      return;
+    }
+
+    if (savedHandle){
+      try{
+        var perm = await savedHandle.queryPermission({ mode: "readwrite" });
+        if (perm !== "granted") perm = await savedHandle.requestPermission({ mode: "readwrite" });
+        if (perm === "granted"){
+          var w0 = await savedHandle.createWritable();
+          await w0.write(text);
+          await w0.close();
+          say(st2, "已覆盖写入 " + savedHandle.name + "。刷新图表页面就能看到。", "ok");
+          return;
+        }
+      }catch(e){}
+    }
+
+    try{
+      var handle = await window.showSaveFilePicker({
+        suggestedName: name,
+        types: [{ description: "数据文件", accept: { "text/javascript": [".js"] } }]
+      });
+      var w = await handle.createWritable();
+      await w.write(text);
+      await w.close();
+      savedHandle = handle;
+      idbPut("target", handle);
+      say(st2, "已写入 " + handle.name + "。下次点这个按钮会直接覆盖，不用再选。", "ok");
+    }catch(e){
+      if (e && (e.name === "AbortError" || e.name === "NotAllowedError")){ say(st2, "已取消。", ""); return; }
+      download(name, text, "text/javascript;charset=utf-8");
+      say(st2, "已退化为下载 " + name + "。", "ok");
+    }
+  });
+
+  $("segEdu").addEventListener("click", function(){ renderStages(autoEdu()); });
+  $("segEven").addEventListener("click", function(){ renderStages(autoEven(4)); });
+  $("clearStage").addEventListener("click", function(){ renderStages([]); });
+  $("addStage").addEventListener("click", function(){
+    var list = collectStages();
+    var rg = dataRange() || { a: ym2i(2000, 1), b: ym2i(2020, 12) };
+    var a, b;
+    if (list.length){
+      var s = ym2i(list[list.length - 1].to[0], list[list.length - 1].to[1]) + 1;
+      if (s > rg.b) s = rg.b;
+      a = i2ym(s); b = i2ym(rg.b);
+    } else {
+      a = i2ym(rg.a); b = i2ym(rg.b);
+    }
+    var e = stageList.querySelector(".empty");
+    if (e) e.remove();
+    stageList.appendChild(makeStageRow({ name: "新的一段", from: [a.y, a.m], to: [b.y, b.m] }));
+    renumber();
+  });
+
+  var DEMO = [
+    "年,月,学历,财富,心态,技能,思想,身体,标签,事件,开,高,低",
+    "1995,1,0,0,0,0,0,0,出生,六个维度全部归零，往后这条线要自己画,,,",
+    "1996,6,2,2,18,3,2,12,幼儿,开始记事。家里搬过几次,,,",
+    "1998,9,6,3,30,5,4,30,上小学,换了学校，认识一群新同学,,,",
+    "2001,4,20,5,22,8,6,45,被欺负,转学之后的一段低谷，话变少了,,,",
+    "2004,9,40,8,40,12,12,52,初中,换了个环境，慢慢缓过来,,,",
+    "2007,9,55,10,52,18,20,60,高中,课业压上来，身体反而练好了,,,",
+    "2010,9,80,12,60,30,34,58,上大学,第一次离家,,,",
+    "2014,7,88,30,52,55,48,42,工作,第一份工作很累，账户第一次有了数字,48,54,41",
+    "2014,9,88,26,44,55,50,44,崩盘,钱烧完，身体也垮了。这根的长下影是当时最低的那个点,,,33",
+    "2019,5,90,62,70,66,66,55,回升,重新开始跑步，从三公里跑起,,,",
+    "2025,12,92,78,78,74,80,66,现在,不算成功，也不算失败,,,"
+  ].join("\n");
+
+  $("demoBtn").addEventListener("click", function(){
+    handleText(DEMO, "demo.csv");
+    $("title").value = "我的人生 K 线";
+    say(st1, "已载入示例：六维、跳空针、分期都填好了，可以直接去 ④ 生成试试。", "ok");
+  });
+
+  $("file").addEventListener("change", function(){
+    if (this.files && this.files[0]) readFile(this.files[0]);
+  });
+  ["dragenter","dragover"].forEach(function(ev){
+    $("drop").addEventListener(ev, function(e){ e.preventDefault(); this.classList.add("on"); });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    $("drop").addEventListener(ev, function(e){ e.preventDefault(); this.classList.remove("on"); });
+  });
+  $("drop").addEventListener("drop", function(e){
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) readFile(f);
+  });
+
+  rowsEl.addEventListener("input", function(){ syncFromDOM(); });
+  rowsEl.addEventListener("change", function(){ syncFromDOM(); });
+
+  renderRows();
+  renderStages([]);
+  $("fname").value = DEF_NAME;
+  var dn = document.getElementById("defname");
+  if (dn) dn.textContent = DEF_NAME;
+})();
+</script>
+</body>
+</html>
