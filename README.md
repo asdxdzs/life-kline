@@ -202,4 +202,4 @@ window.KLINE_DATA = {
 
 ## License
 
-MIT。拿去改成你自己的，或者做成别的东西，都行。
+MIT。见LICENSE
