@@ -207,4 +207,4 @@ window.KLINE_DATA = {
 
 ## License
 
-MIT License，见https://github.com/asdxdzs/life-kline/blob/main/LICENSE 
+MIT License，见 [LICENSE](LICENSE)
